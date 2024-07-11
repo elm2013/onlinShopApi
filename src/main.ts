@@ -5,7 +5,9 @@ import { Validation } from './shared/interceptors/validation';
 import { BadRequestException } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'verbose'],
+  });
   // *********** App Global Pipes ************ //
   app.useGlobalPipes(
     new Validation({
