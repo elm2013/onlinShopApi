@@ -37,4 +37,28 @@ export class TransactionController {
     ) {
         return await this.requestTransactionService.sendTransaction(token, response);
     }
+
+    @Post('v1/request-transaction-from-wallet')
+    @UseGuards(AuthGuard('jwt'))
+    @ApiBearerAuth()
+    async requestTransactionFromWallet(
+        @Body() body: RequestTransactionDto,
+        @Request() req,
+
+    ) {
+        return await this.requestTransactionService.requestTransactionfromWallet(body, req.user);
+    }
+
+
+    @Post('v1/verify-request')
+    @UseGuards(AuthGuard('jwt'))
+    @ApiBearerAuth()
+    async VerifyrequestTransaction(
+        @Request() request,
+        @Response() response
+
+    ) {
+        return await this.requestTransactionService.verifyTransaction(request, response);
+    }
+
 }

@@ -99,4 +99,137 @@ export class TransactionService {
 
         // return await response.render('sendPayment', sendTransactionData);
     }
+
+    async requestTransactionfromWallet(data: RequestTransactionDto, user) {
+
+        let newTransActionData = {
+            user: user,
+            amount: data.price,
+            gateway: data.gateway,
+            description: "پرداخت سفارش ",
+            mode: TransactionModeEnum.DECREASE,
+            method: TransactionMethodEnum.WALLET,
+            status: TransactionStatusEnum.COMPLETED
+        };
+        let source = await this.orderRepository.findOne({ where: { id: data.source } })
+
+        let newTransAction = await this.transactionRepository.save(
+            this.transactionRepository.create(newTransActionData)
+        );
+        source.transaction = newTransAction
+        await this.orderRepository.save(source)
+    }
+
+    async verifyTransaction(request, response) {
+        let data;
+        let status = request.query.Status
+        let authority = request.query.Authority
+        let transaction = await this.transactionRepository.findOneBy({ authority: authority });
+
+
+        if (!transaction) {
+            let verifyTransactionData = await {
+                res: await authority,
+                type: await '',
+                date: await new Date().toLocaleDateString('fa'),
+                time: await new Date().toLocaleTimeString('fa'),
+                amount: await transaction.amount,
+                btnUrl: await `https://example.iran.liara.run/api/v1/transactionDone?status=canceled`
+            }
+
+            return await response.render('failed', verifyTransactionData);
+        }
+        else {
+            if (status == 'OK') {
+                let isVerifyTransactionSuccess = null;
+
+                let req_data = {
+                    "merchant_id": process.env.MERCHANTID,
+                    "amount": transaction.amount,
+                    "authority": authority
+                }
+
+                var config = {
+                    method: await 'post',
+                    url: await 'https://api.zarinpal.com/pg/v4/payment/verify.json',
+                    data: await req_data,
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/json'"
+                    }
+                };
+
+                await axios(config)
+                    .then(async (response) => {
+                        if (response.data.errors.length == 0) {
+                            data = response.data.data
+                            isVerifyTransactionSuccess = await true
+                        } else {
+                            isVerifyTransactionSuccess = await false
+                        }
+                    })
+                    .catch(err => (console.log(err)
+                    ))
+
+                if (isVerifyTransactionSuccess == true) {
+                    transaction.traceNo = data.ref_id
+                    transaction.status = TransactionStatusEnum.COMPLETED
+
+                    transaction = await this.transactionRepository.save(transaction);
+
+
+
+
+
+                    let verifyTransactionData = await {
+                        res: await authority,
+                        type: await 'پرداخت صورت حساب',
+                        date: await new Date(String(transaction.createDate)).toLocaleDateString('fa'),
+                        time: await new Date(String(transaction.createDate)).toLocaleTimeString('fa'),
+                        amount: await transaction.amount,
+                        btnUrl: await `https://example.iran.liara.run/api/v1/transactionDone?status=succeed`
+                    }
+
+
+                    // let title = 'تایید تراکنش'
+                    // let description = 'تراکنش تایید شد'
+                    // NotifMessageService.sendNotif(title, description, await transaction.user)
+
+                    return await response.render('successful', verifyTransactionData);
+                }
+                else if (isVerifyTransactionSuccess == false) {
+
+                    let verifyTransactionData = await {
+                        res: await authority,
+                        type: await '',
+                        date: await new Date().toLocaleDateString('fa'),
+                        time: await new Date().toLocaleTimeString('fa'),
+                        amount: await transaction.amount,
+                        btnUrl: await `https://example.iran.liara.run/api/v1/transactionDone?status=canceled`
+                    }
+
+                    return await response.render('failed', verifyTransactionData);
+                }
+
+
+            } else {
+
+                let verifyTransactionData = await {
+                    res: await authority,
+                    type: await '',
+                    date: await new Date().toLocaleDateString('fa'),
+                    time: await new Date().toLocaleTimeString('fa'),
+                    amount: await transaction.amount,
+                    btnUrl: await `https://example.iran.liara.run/api/v1/transactionDone?status=canceled`
+                }
+                return await response.render('failed', verifyTransactionData);
+            }
+
+        }
+
+    }
+
+
+
+
 } 
