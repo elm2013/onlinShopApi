@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { Transaction } from "./transaction.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -9,8 +9,10 @@ import { TransactionMethodEnum } from "./enums/method.enum";
 import { TransactionStatusEnum } from "./enums/status.enum";
 import { Order } from "../order/entity/order.entity";
 import axios from 'axios';
+
 @Injectable()
 export class TransactionService {
+
 
     constructor(
         @InjectRepository(Transaction) private readonly transactionRepository: Repository<Transaction>,
@@ -101,11 +103,14 @@ export class TransactionService {
     }
 
     async requestTransactionfromWallet(data: RequestTransactionDto, user) {
-
+        let balance = await this.getBalance(user)
+        if (balance < data.price) {
+            return new BadRequestException("balance is not enough")
+        }
         let newTransActionData = {
             user: user,
             amount: data.price,
-            gateway: data.gateway,
+            gateway: TransactionGetwayEnum.BUY,
             description: "پرداخت سفارش ",
             mode: TransactionModeEnum.DECREASE,
             method: TransactionMethodEnum.WALLET,
@@ -228,6 +233,25 @@ export class TransactionService {
         }
 
     }
+
+    async getBalance(user: any) {
+        let balance = 0
+        let listTransaction = await this.transactionRepository.find({ where: { user: user.id, status: TransactionStatusEnum.COMPLETED } })
+        for (const iterator of listTransaction) {
+            //if type of pay  is add to wallet  balance += amount
+            if (iterator.gateway == TransactionGetwayEnum.WALLET) {
+                balance += iterator.amount
+            }
+            else { //if type of pay  is buy  and  paid from wallet balance -=amount
+                if (iterator.method == TransactionMethodEnum.WALLET) {
+                    balance -= iterator.amount
+                }
+            }
+        }
+        return balance
+    }
+
+
 
 
 

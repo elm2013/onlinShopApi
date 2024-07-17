@@ -61,4 +61,11 @@ export class TransactionController {
         return await this.requestTransactionService.verifyTransaction(request, response);
     }
 
+    @Get('v1/wallet-amount')
+    @UseGuards(AuthGuard('jwt'))
+    @ApiBearerAuth()
+    async GetamountOfWallet(@Request() req,) {
+        return await this.requestTransactionService.getBalance(req.user);
+    }
+
 }
