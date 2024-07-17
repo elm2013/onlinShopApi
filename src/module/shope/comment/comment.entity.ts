@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Product } from '../product/product.entity';
 
 @Entity()
@@ -8,6 +8,12 @@ export class Comment {
 
     @ManyToOne(() => Product, product => product.comments)
     product: Product;
+
+    @OneToMany(type => Comment, comment => comment.parentComment,)
+    replies: Comment[];
+
+    @ManyToOne(type => Comment, comment => comment.replies, { nullable: true })
+    parentComment: Comment;
 
     @Column()
     name: string;
@@ -21,5 +27,3 @@ export class Comment {
 }
 
 
-
-// Need to add logic for GenericForeignKey equivalent in TypeORM
