@@ -14,7 +14,7 @@ import { ApiBearerAuth, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger'
 @ApiTags('product')
 @Controller('product')
 export class ProductsController {
-    constructor(private readonly usersService: ProductsService) { }
+    constructor(private readonly productService: ProductsService) { }
 
     // @Post()
     // create(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -48,7 +48,7 @@ export class ProductsController {
         pageNumber = (pageNumber && pageNumber > 0) ? pageNumber : 1;
         searchText = searchText ? searchText : '';
         limit = (limit && limit > 0) ? limit : 20;
-        return this.usersService.paginate({ pageNumber, limit, searchText })
+        return this.productService.paginate({ pageNumber, limit, searchText })
     }
 
 
@@ -56,16 +56,16 @@ export class ProductsController {
     @ApiOperation({ summary: 'Get all product .' })
     findAll(): Promise<Product[]> {
 
-        return this.usersService.findAll();
+        return this.productService.findAll();
     }
 
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number): Promise<Product> {
-        return this.usersService.findOne(id);
+        return this.productService.findOne(id);
     }
 
     @Delete(':id')
     remove(@Param('id') id: string): Promise<void> {
-        return this.usersService.remove(id);
+        return this.productService.remove(id);
     }
 }

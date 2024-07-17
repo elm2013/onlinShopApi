@@ -19,7 +19,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ConflictException } from '@nestjs/common/exceptions';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
-@ApiTags('Users')
+@ApiTags('User')
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) { }

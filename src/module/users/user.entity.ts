@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn } from 'typeorm';
 import { Order } from '../shope/order/entity/order.entity';
+import { Like } from '../shope/like/like.entity';
 
 @Entity()
 export class User {
@@ -37,5 +38,8 @@ export class User {
     @OneToMany(() => Order, order => order.user, { onDelete: 'CASCADE' })
     @JoinColumn()
     orders: Order[]
+
+    @OneToMany(() => Like, like => like.user)
+    like: Like[];
 
 }
